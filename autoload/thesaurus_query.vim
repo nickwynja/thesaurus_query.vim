@@ -9,7 +9,9 @@ if exists("g:loaded_thesaurus_query_autoload")
 endif
 let g:loaded_thesaurus_query_autoload = 1
 
-let s:cursor_pos = getpos(".")
+let s:save_cpo = &cpo
+set cpo&vim
+
 
 " legacy settings (depreciated, do NOT use) {{{
 
@@ -232,6 +234,7 @@ function! thesaurus_query#Thesaurus_Query_Lookup(word, replace) " {{{
     let l:word = substitute(tolower(l:trimmed_word), '"', '', 'g')
     let l:word_fname = fnameescape(l:word)
     let l:syno_found = 1  " initialize the value
+    let l:cursor_pos = getpos(".")
 
 
 exec s:tq_python_env
@@ -255,6 +258,7 @@ while tq_continue_query>0:
 # if replace flag is on, prompt user to choose after populating candidate list
     elif vim.eval('l:replace') != '0':
         tq_continue_query = tq_interface.tq_replace_cursor_word_from_candidates(tq_synonym_result, tq_framework.good_backends[-1])
+        vim.command("call setpos('.', l:cursor_pos)")
     else:
         tq_continue_query = 0
         tq_framework.session_terminate()
@@ -322,4 +326,4 @@ endfunction
 
 call thesaurus_query#Thesaurus_Query_Init()
 
-call setpos('.', s:cursor_pos)
+let &cpo = s:save_cpo
